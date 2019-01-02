@@ -1,4 +1,18 @@
-function [han,modes] = modal_analysis(P,test,res_func)
+function [modes,han] = modal_analysis(P,V,res_func)
+% MODAL_ANALYSIS Performs modal analysis on multiple hammer tests
+%
+%      Inputs:
+%           - P: Structure containing test configuration, such as locations 
+%                of accelerometers, and natural frequencies bounds.
+%           - V: Structure array containing response to each hammer test
+%           - res_func: Method used to extract modal properties from each
+%                peak. This can be 'peak_fit','nyq_fit','line_fit' or 'ls_fit'
+%
+%     Outputs:
+%           - modes: Structure containig the modal properties and mode shapes       
+%           - han: handles to the figures and axes used to plot the FRFs.
+%                  Useful if you want to overlay information later.
+
 if nargin < 3
     res_func = 'peak_fit';
 end
@@ -73,7 +87,7 @@ for k = 1:NAccel
     xlabel('f (Hz)')
 end
 
-[V,leg] = read_and_process_signalcalc(test);
+V = process_responses(V);
 Ntest = size(V,1);
 NSig = size(V,2);
 
@@ -149,6 +163,7 @@ for k = 1:NSig
     end
 end
 
+leg = {V(:,1).Label};
 legend(han.exp.hMag(:,end),leg);
 linkaxes([han.exp.axMag(:);han.exp.axPh(:)],'x');
 drawnow
@@ -479,3 +494,64 @@ K = 1/mean(y-u);
 function M = residual_mass(w,u,y)
 a = (-1./(w.^2))\(y-u);
 M = -1./a;
+
+function V = process_responses(V)
+%checks whether we have time or frequency domain responses
+%if in time domain, take FFT to yield the FRF
+
+if ~isfield(V(1,1),'Freq') && isfield(V(1,1),'Time')
+    %time domain
+    NSig = size(V,2)-1;
+    for i = 1:Ntest
+
+        x = V(i,1).Real;
+        t = V(i,1).Time;
+
+        y = repmat(0*x,1,NSig);
+        for k = 1:NSig
+            y(:,k) = V(i,k+1).Real;
+        end
+        
+        %remove nans
+        iKeep = ~isnan(x) & ~any(isnan(y),2);
+        x = x(iKeep);
+        y = y(iKeep,:);
+        t = t(iKeep);
+        
+%         ws = 2*pi./mean(diff(t));
+%         wc = 200*2*pi;
+%         plot(ax(1),t,y(:,1))
+%         plot(ax(2),t,y(:,2))
+        %apply butterworth filter
+%         [num,den] = butter(2,wc/(ws/2));
+%         y = filtfilt(num,den,y);
+%         figure
+%         plot(t,y)
+%         for k = 1:size(y,2)
+%             y(:,k) = smooth(y(:,k),20);
+%         end
+%         hold on
+%         plot(t,y)
+        
+        %take fft
+        X = fft(x);
+        Y = fft(y);
+        H = Y./X;
+
+        ws = 2*pi./mean(diff(t));
+        Nfft = length(t);
+        w = ((1:Nfft)-1)'/Nfft * ws;
+        
+        for k = 1:NSig
+            V2(i,k).Magnitude = abs(H(:,k));
+            V2(i,k).Phase = angle(H(:,k));
+
+            V2(i,k).Imaginary = imag(H(:,k));
+            V2(i,k).Real = real(H(:,k));
+
+            V2(i,k).Frequency = w;
+        end
+        
+    end
+    V = V2;
+end

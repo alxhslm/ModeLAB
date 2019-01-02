@@ -13,87 +13,96 @@ function V = read_signalcalc(file)
 %           - [Magnitude]
 %           - [Phase]
 
-fid = fopen(file);
+if ~iscell(file)
+    [~,label] = fileparts(file);
+    fid = fopen(file);
 
-%read first line to determine what format we have
-hdr = fgetl(fid);
-if strncmp(hdr,'Data written for',16)
-    %multiple channel format
-    [sig,chan,units,data] = multi_chan(fid);
-else
-    %single channel format
-    [sig,chan,units,data] = single_chan(fid);
-end
+    %read first line to determine what format we have
+    hdr = fgetl(fid);
+    if strncmp(hdr,'Data written for',16)
+        %multiple channel format
+        [sig,chan,units,data] = multi_chan(fid);
+    else
+        %single channel format
+        [sig,chan,units,data] = single_chan(fid);
+    end
 
-%sometimes some channels share units
-NSig = length(sig);
-unitsX = units(1);
-unitsY = reshape(units(2:end),[],NSig);
-NChan = size(unitsY,1);
-for k = 1:NSig
-    for l = 1:NChan
-        if strcmp(unitsY(l,k),'')
-            unitsY(l,k) = unitsY(1,k);
+    %sometimes some channels share units
+    NSig = length(sig);
+    unitsX = units(1);
+    unitsY = reshape(units(2:end),[],NSig);
+    NChan = size(unitsY,1);
+    for k = 1:NSig
+        for l = 1:NChan
+            if strcmp(unitsY(l,k),'')
+                unitsY(l,k) = unitsY(1,k);
+            end
         end
     end
-end
-units = [unitsX unitsY(:)'];
+    units = [unitsX unitsY(:)'];
 
-%convert to SI units
-for i = 1:length(chan)
-    switch units{i}
-        case 'sec'
-            scale = 1;
-            units{i} = 's';
-        case 'Hz'
-            scale = 2*pi;
-            units{i} = 'rads';
-        case 'deg'
-            scale = pi/180;
-            units{i} = 'rad';
-        otherwise
-            scale = 1;
+    %convert to SI units
+    for i = 1:length(chan)
+        switch units{i}
+            case 'sec'
+                scale = 1;
+                units{i} = 's';
+            case 'Hz'
+                scale = 2*pi;
+                units{i} = 'rads';
+            case 'deg'
+                scale = pi/180;
+                units{i} = 'rad';
+            otherwise
+                scale = 1;
+        end
+      data(:,i) = scale*data(:,i);
     end
-  data(:,i) = scale*data(:,i);
-end
 
-%extract common X vector
-chanX = chan{1};
-dataX = data(:,1);
-unitsX = units{1};
+    %extract common X vector
+    chanX = chan{1};
+    dataX = data(:,1);
+    unitsX = units{1};
 
-%extract Y data
-chanY = reshape(chan(2:end),NChan,NSig);
-dataY = data(:,2:end);
-unitsY =reshape(units(2:end),NChan,NSig);
-for k = 1:NSig
-    V(k).(chanX) = dataX;
-    for l = 1:NChan
-        V(k).(chanY{l,k}) = dataY(:,(k-1)*NChan+l);
-        V(k).Units = unitsY{l,k};
-    end
-    V(k).Name = sig{k};
-end
-
-%finally convert mag/ph -> re/im and vice versa
-if ~isfield(V(1),'Magnitude') && (isfield(V(1),'Real') && isfield(V(1),'Imaginary'))
+    %extract Y data
+    chanY = reshape(chan(2:end),NChan,NSig);
+    dataY = data(:,2:end);
+    unitsY =reshape(units(2:end),NChan,NSig);
     for k = 1:NSig
-        [V(k).Phase,V(k).Magnitude] = cart2pol(V(k).Real,V(k).Imaginary);
+        V(k).(chanX) = dataX;
+        for l = 1:NChan
+            V(k).(chanY{l,k}) = dataY(:,(k-1)*NChan+l);
+            V(k).Units = unitsY{l,k};
+        end
+        V(k).Name = sig{k};
+        V(k).Label = label;
     end
-elseif ~isfield(V(1),'Real') && (isfield(V(1),'Magnitude') && isfield(V(1),'Phase'))
-    for k = 1:NSig
-        [V(k).Real,V(k).Imaginary] = pol2cart(V(k).Phase,V(k).Magnitude);
+
+    %finally convert mag/ph -> re/im and vice versa
+    if ~isfield(V(1),'Magnitude') && (isfield(V(1),'Real') && isfield(V(1),'Imaginary'))
+        for k = 1:NSig
+            [V(k).Phase,V(k).Magnitude] = cart2pol(V(k).Real,V(k).Imaginary);
+        end
+    elseif ~isfield(V(1),'Real') && (isfield(V(1),'Magnitude') && isfield(V(1),'Phase'))
+        for k = 1:NSig
+            [V(k).Real,V(k).Imaginary] = pol2cart(V(k).Phase,V(k).Magnitude);
+        end
     end
-end
 
-%create complex channel
-for k = 1:NSig
-    V(k).H = V(k).Real + 1i*V(k).Imaginary;
-end
-
-if isfield(V(1),'Phase')
+    %create complex channel
     for k = 1:NSig
-        V(k).Phase = unwrap(V(k).Phase);
+        V(k).H = V(k).Real + 1i*V(k).Imaginary;
+    end
+
+    if isfield(V(1),'Phase')
+        for k = 1:NSig
+            V(k).Phase = unwrap(V(k).Phase);
+        end
+    end
+
+else
+    for i = 1:length(file)
+        V(i,:) = read_signalcalc(file{i});
     end
 end
 
