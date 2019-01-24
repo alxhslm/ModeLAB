@@ -1,13 +1,23 @@
 function P = read_setup_csv(file)
+
 % edit(file);
 fid  = fopen(file);
 C = {};
 X = {};
 while ~feof(fid)
     line = fgetl(fid);
-    row = textscan(line,['%s' repmat('%f',1,50)],'Delimiter',',','CollectOutput',true);
-    C(end+1) = row{1};
-    X{end+1} = row{2}(~isnan(row{2}));
+    row = textscan(line,['%s' repmat('%s',1,50)],'Delimiter',',','CollectOutput',true);     
+    field = row{1}{1};
+    data = row{1}(2:end);
+    data = data(~cellfun(@isempty,data));
+    if field(1) ~= '#'
+        if isempty(data)
+            data = [];
+        elseif ~isnan(str2double(data{1}))
+            data = cellfun(@str2double,data);
+        end
+        P.(field) = data;
+    end
 end
 fclose(fid);
 
