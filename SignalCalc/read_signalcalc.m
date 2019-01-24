@@ -67,7 +67,7 @@ if ~iscell(file)
     %extract Y data
     chanY = reshape(chan(2:end),NChan,NSig);
     dataY = data(:,2:end);
-    unitsY =reshape(units(2:end),NChan,NSig);
+    unitsY = reshape(units(2:end),NChan,NSig);
     for k = 1:NSig
         V(k).(chanX) = dataX;
         for l = 1:NChan
@@ -90,6 +90,12 @@ if ~iscell(file)
     end
 
     %create complex channel
+    if ~isfield(V,'Imaginary')
+        for k = 1:NSig
+            V(k).Imaginary = 0*V(k).Real;
+        end
+    end
+    
     for k = 1:NSig
         V(k).H = V(k).Real + 1i*V(k).Imaginary;
     end
