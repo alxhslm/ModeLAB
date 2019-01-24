@@ -164,7 +164,6 @@ for k = 1:NSig
 end
 
 leg = {V(:,1).Label};
-legend(han.exp.hMag(:,end),leg);
 linkaxes([han.exp.axMag(:);han.exp.axPh(:)],'x');
 drawnow
 
@@ -474,6 +473,9 @@ for i = 1:Ntest
     end
 end
 linkaxes([han.model.axMag(:);han.model.axPh(:)],'x');
+
+legend(han.exp.hMag(:,end),leg);
+legend(han.model.hMag(:,end),leg);
 
 Phi = u_exp;
 modes.Phi = u_exp;
