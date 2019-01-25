@@ -6,17 +6,21 @@ C = {};
 X = {};
 while ~feof(fid)
     line = fgetl(fid);
-    row = textscan(line,['%s' repmat('%s',1,50)],'Delimiter',',','CollectOutput',true);     
-    field = row{1}{1};
-    data = row{1}(2:end);
-    data = data(~cellfun(@isempty,data));
-    if field(1) ~= '#'
-        if isempty(data)
-            data = [];
-        elseif ~isnan(str2double(data{1}))
-            data = cellfun(@str2double,data);
+    if line(1) ~= '%'
+        row = textscan(line,['%s' repmat('%s',1,50)],'Delimiter',',','CollectOutput',true);     
+        field = row{1}{1};
+        data = row{1}(2:end);
+        data = data(~cellfun(@isempty,data));
+        if field(1) ~= '#'
+            if isempty(data)
+                data = [];
+            elseif ~isnan(str2double(data{1}))
+                data = cellfun(@str2double,data);
+            end
+            P.(field) = data;
         end
-        P.(field) = data;
+    else
+        %skip commented lines
     end
 end
 fclose(fid);
