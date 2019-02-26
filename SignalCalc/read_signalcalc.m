@@ -113,20 +113,27 @@ else
 end
 
 function [sig,chan,units,data] = single_chan(fid)
+%extract complete header
+i = 1;
+hdr{1} = fgetl(fid);
+while ~strcmp(hdr{i},'Units:')
+    i = i + 1;
+    hdr{i} = fgetl(fid);
+end
+%one more for units
+hdr{end+1} = fgetl(fid);
+
+%no signal name for single channel files
 sig = {''};
 NSig = 1;
 
-%extract signal names
-for i = 1:5
-    hdrChan = fgetl(fid);
-end
+%extract channel names
+hdrChan = hdr{end-3};
 chan = strtrim(strsplit(hdrChan,'\t')); 
 NChan = length(chan)-1;
 
 %extract units
-for i = 1:3
-    hdrUnits = fgetl(fid);
-end
+hdrUnits = hdr{end};
 units = strtrim(strsplit(hdrUnits,'\t'));
 if length(units)<NChan+1
     units{NChan+1} = '';
@@ -153,22 +160,29 @@ end
 units = [unitsX unitsY];
 
 function [sig,chan,units,data] = multi_chan(fid)
-%extract signal names
-for i = 1:5
-    hdrSig = fgetl(fid);
+%extract complete header
+i = 1;
+hdr{1} = fgetl(fid);
+while ~strcmp(hdr{i},'Units:')
+    i = i + 1;
+    hdr{i} = fgetl(fid);
 end
+%one more for units
+hdr{end+1} = fgetl(fid);
+
+%list of signals - eg H1,2  H1,3 etc
+hdrSig = hdr{end-4};
 sig = strtrim(strsplit(hdrSig,'\t')); sig = sig(2:end);  sig = sig(~strcmp(sig,'')); 
 NSig = length(sig);
 
-%extract channel names
-hdrChan = fgetl(fid);
+%extract channel names - eg Real Imaginary Magnitude
+%likely >1 per signal
+hdrChan = hdr{end-3};
 chan = strtrim(strsplit(hdrChan,'\t'));
 NChan = (length(chan)-1)/NSig;
 
-%extract units
-for i = 1:4
-    hdrUnits = fgetl(fid);
-end
+%extract units eg m/s2 deg etc
+hdrUnits = hdr{end};
 units = strtrim(strsplit(hdrUnits,'\t'));
 if length(units)<NChan*NSig+1
     units{NChan*NSig+1} = '';
