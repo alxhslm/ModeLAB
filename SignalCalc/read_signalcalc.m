@@ -171,13 +171,13 @@ end
 hdr{end+1} = fgetl(fid);
 
 %list of signals - eg H1,2  H1,3 etc
-hdrSig = hdr{end-4};
+hdrSig = hdr{end-5};
 sig = strtrim(strsplit(hdrSig,'\t')); sig = sig(2:end);  sig = sig(~strcmp(sig,'')); 
 NSig = length(sig);
 
 %extract channel names - eg Real Imaginary Magnitude
 %likely >1 per signal
-hdrChan = hdr{end-3};
+hdrChan = hdr{end-4};
 chan = strtrim(strsplit(hdrChan,'\t'));
 NChan = (length(chan)-1)/NSig;
 
