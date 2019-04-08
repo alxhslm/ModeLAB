@@ -38,8 +38,8 @@ rHam = [P.xHammer;
 rAcc = [P.xAccel;
         P.yAccel;
         P.zAccel];
-    
-    
+   
+        
 %flip sign if accelerometer in the negative direction
 sHam = (1-2*any(nHam < 0,1));
 sAcc = (1-2*any(nAcc < 0,1));
@@ -87,9 +87,18 @@ for k = 1:NAccel
     xlabel('f (Hz)')
 end
 
+Ntest = length(P.zHammer);
+NSig = length(P.zAccel);
+
+if size(V,1) > Ntest
+    V = V(1:Ntest,:);
+end
+
+if size(V,1) > NSig
+    V = V(:,1:NSig);
+end
+
 V = process_responses(V);
-Ntest = size(V,1);
-NSig = size(V,2);
 
 test_col = lines(Ntest);
 mode_col = lines(Nmodes);
@@ -97,8 +106,8 @@ mode_col = lines(Nmodes);
 %convert acc/vel to disp
 for i = 1:NSig
     w = V(1,i).Frequency + eps;
-    if strncmp(V(1,i).Units,'m/s²',4)
-        fprintf('Changing units of channel %d from ''m/s²'' to ''m''\n',i)
+    if strncmp(V(1,i).Units,'m/sï¿½',4)
+        fprintf('Changing units of channel %d from ''m/sï¿½'' to ''m''\n',i)
         scale = w.^2;
         units = ['m' V(1,i).Units(5:end)];
     elseif strncmp(V(1,i).Units,'m/s',3)
