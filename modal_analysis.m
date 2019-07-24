@@ -106,8 +106,8 @@ mode_col = lines(Nmodes);
 %convert acc/vel to disp
 for i = 1:NSig
     w = V(1,i).Frequency + eps;
-    if strncmp(V(1,i).Units,'m/s�',4)
-        fprintf('Changing units of channel %d from ''m/s�'' to ''m''\n',i)
+    if strncmp(V(1,i).Units,['m/s' char(178)],4)
+        fprintf('Changing units of channel %d from ''m/s2'' to ''m''\n',i)
         scale = w.^2;
         units = ['m' V(1,i).Units(5:end)];
     elseif strncmp(V(1,i).Units,'m/s',3)
@@ -131,11 +131,6 @@ for i = 1:NSig
         V(1,i).Units = units;
     end
 end
-%record new vectors
-nAcc(:,any(nAcc < 0,1)) = -nAcc(:,any(nAcc < 0,1));
-nHam(:,any(nHam < 0,1)) = -nHam(:,any(nHam < 0,1));
-P.nHammer = nHam;
-P.nAccel = nAcc;
 
 disp('Plotting FRFs...')
 for i = 1:Ntest
