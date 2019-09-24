@@ -27,6 +27,17 @@ if ~iscell(file)
         [sig,chan,units,data] = single_chan(fid);
     end
 
+    switch sig{1}(1)
+        case {'X','W'}
+            type = 'Time';
+        case 'H'
+            type = 'TF';
+        case 'S'
+            type = 'Spectrum';
+        otherwise
+            type = 'Unknown';
+    end
+    
     %sometimes some channels share units
     NSig = length(sig);
     unitsX = units(1);
@@ -68,6 +79,16 @@ if ~iscell(file)
     chanY = reshape(chan(2:end),NChan,NSig);
     dataY = data(:,2:end);
     unitsY = reshape(units(2:end),NChan,NSig);
+    
+    if strcmp(type,'Time') && NSig > 2
+        %signalcalc exports time series with multiple channels wrongly
+        %fix this issue here
+        iTrim = find(~isnan(dataY(:,3)),1)-1;
+        dataY(:,3:end) = [dataY((iTrim+1):end,3:end); dataY(end-iTrim+1:end,1:(NSig-2))];
+        dataY = dataY(1:end-iTrim,:);
+        dataX = dataX(1:end-iTrim,:);
+    end
+    
     for k = 1:NSig
         V(k).(chanX) = dataX;
         for l = 1:NChan
@@ -76,8 +97,9 @@ if ~iscell(file)
         end
         V(k).Name = sig{k};
         V(k).Label = label;
+        V(k).Type = type;
     end
-
+    
     %finally convert mag/ph -> re/im and vice versa
     if ~isfield(V(1),'Magnitude') && (isfield(V(1),'Real') && isfield(V(1),'Imaginary'))
         for k = 1:NSig
@@ -105,7 +127,7 @@ if ~iscell(file)
             V(k).Phase = unwrap(V(k).Phase);
         end
     end
-
+    
 else
     for i = 1:length(file)
         V(i,:) = read_signalcalc(file{i});
