@@ -1,9 +1,9 @@
-function [modal_par,alpha]=grfp(rec,omega,N,wt)
+function modal_par = grfp(rec,omega,N,wt)
  
-%RFP Modal parameter estimation from frequency response function using 
+%GRFP Modal parameter estimation from frequency response function using 
 % rational fraction polynomial method.
 %
-% Syntax: [alpha,modal_par]=rfp(rec,omega,N)
+% Syntax: model_par = grfp(rec,omega,N)
 %
 % rec   = FRF measurement (receptance)
 % omega = frequency range vector (rad/sec).
@@ -20,6 +20,7 @@ function [modal_par,alpha]=grfp(rec,omega,N,wt)
 %           Polynomials", 1ºIMAC Conference, Orlando, FL. November, 1982.
 %**********************************************************************
 %Chile, March 2002, Cristian Andrés Gutiérrez Acuña, crguti@icqmail.com
+%UK, September 2019, Alex Haslam, alexhaslam12@gmail.com
 %**********************************************************************
 
 omega = omega(:);%omega is now a column
@@ -85,14 +86,9 @@ Ai=-2*(real(residuals).*real(poles)+imag(residuals).*imag(poles));
 Bi=2*real(residuals);
 Ar=complex(Ai,abs(poles).*Bi).';
     
-modal_par.alpha = alpha;
-
-modal_par.Frequency = freq;
-modal_par.Damping = damp;
-
-modal_par.Real = real(Ar);
-modal_par.Imaginary = imag(Ar);
-modal_par.Magnitude = abs(Ar);
-modal_par.Phase = angle(Ar);
+modal_par.H = alpha;
+modal_par.omega = freq;
+modal_par.zeta = damp;
+modal_par.A = Ar;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

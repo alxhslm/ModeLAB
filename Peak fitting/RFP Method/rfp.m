@@ -80,14 +80,9 @@ Ai=-2*(real(residuals).*real(poles)+imag(residuals).*imag(poles));
 Bi=2*real(residuals);
 Ar=complex(Ai,abs(poles).*Bi);
     
-modal_par.alpha = alpha;
-
-modal_par.Frequency = freq;
-modal_par.Damping = damp;
-
-modal_par.Real = real(Ar);
-modal_par.Imaginary = imag(Ar);
-modal_par.Magnitude = abs(Ar);
-modal_par.Phase = angle(Ar);
+modal_par.H = alpha;
+modal_par.omega = freq;
+modal_par.zeta = damp;
+modal_par.A = Ar;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
