@@ -103,7 +103,7 @@ end
 
 %% Extract natural frequencies and damping ratios
 modes_mat_file = fullfile(dataroot, 'modes.mat'); 
-if ~isfile(modes_mat_file)
+if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file)
     disp('Isolating peaks..')
     modes.fit.w = exp.w;
     modes.fit.H = NaN(Nfreq,NHam,NAccel);
