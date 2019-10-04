@@ -4,6 +4,20 @@ function frf = modal_load_frfs(dataroot)
 d = dir(fullfile(dataroot,'*','Hx*.txt'));
 frf_ascii_files = strcat({d(:).folder},filesep,{d(:).name})';
 
+frf_mat_file = fullfile(dataroot, 'exp.mat'); 
+if isfile(frf_mat_file)
+    old_frf = load(frf_mat_file);
+    old_label = old_frf.TestLabel;
+    [new_label,~] = filename(frf_ascii_files);
+    if length(old_label) == length(new_label) && all(strcmp(old_label,new_label))
+    	frf = old_frf;
+        disp('Reloading FRFs..')
+        return;
+    end
+end
+
+disp('Loading FRFs..')
+
 Data = read_signalcalc(frf_ascii_files);
 NTest = size(Data,1);
 NSig = size(Data,2);
@@ -68,3 +82,5 @@ end
 
 %get legend entries
 frf.TestLabel = {V(:,1).Label};
+
+save(frf_mat_file,'-struct','frf');

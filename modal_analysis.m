@@ -30,12 +30,7 @@ end
 
 %% Extract FRFs and store in matrix
 exp_mat_file = fullfile(dataroot, 'exp.mat'); 
-if ~isfile(exp_mat_file)
-    exp = modal_load_frfs(dataroot);   
-    save(exp_mat_file,'-struct','exp')
-else
-    exp = load(exp_mat_file);
-end
+exp = modal_load_frfs(dataroot);   
 
 %% Trim frf / geomtery
 
@@ -103,7 +98,7 @@ end
 
 %% Extract natural frequencies and damping ratios
 modes_mat_file = fullfile(dataroot, 'modes.mat'); 
-if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file)
+if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) || moddate(exp_mat_file) > moddate(modes_mat_file)
     disp('Isolating peaks..')
     modes.fit.w = exp.w;
     modes.fit.H = NaN(Nfreq,NHam,NAccel);
@@ -210,13 +205,13 @@ else
     modes = load(modes_mat_file);
 end
 
-%plot fit at each mode
-for i = 1:NHam
-    for k = 1:NAccel
-        plot(han.exp.axMag(k),exp.w/2/pi,abs(modes.fit.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
-        plot(han.exp.axPh(k) ,exp.w/2/pi,angle(modes.fit.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
-    end
-end
+% %plot fit at each mode
+% for i = 1:NHam
+%     for k = 1:NAccel
+%         plot(han.exp.axMag(k),exp.w/2/pi,abs(modes.fit.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
+%         plot(han.exp.axPh(k) ,exp.w/2/pi,angle(modes.fit.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
+%     end
+% end
 
 
 %plot the modal constants on FRF
@@ -258,13 +253,13 @@ else
     model = load(model_mat_file);
 end
 
-%overlay model fit with experimental data
-for i = 1:NHam
-    for k = 1:NAccel
-        plot(han.exp.axMag(k),exp.w/2/pi,abs(model.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
-        plot(han.exp.axPh(k) ,exp.w/2/pi,angle(model.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
-    end
-end
+% %overlay model fit with experimental data
+% for i = 1:NHam
+%     for k = 1:NAccel
+%         plot(han.exp.axMag(k),exp.w/2/pi,abs(model.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
+%         plot(han.exp.axPh(k) ,exp.w/2/pi,angle(model.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
+%     end
+% end
 
 han.model = modal_plot_frfs(model,setup,options);
 
