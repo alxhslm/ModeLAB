@@ -3,23 +3,35 @@ function frf = modal_load_frfs(dataroot)
 %find the ascii files
 d = dir(fullfile(dataroot,'*','Hx*.txt'));
 frf_ascii_files = strcat({d(:).folder},filesep,{d(:).name})';
+[new_label,~] = filename(frf_ascii_files);
 
 frf_mat_file = fullfile(dataroot, 'exp.mat'); 
 if isfile(frf_mat_file)
+    disp('Reloading FRFs..')
     old_frf = load(frf_mat_file);
-    old_label = old_frf.TestLabel;
-    [new_label,~] = filename(frf_ascii_files);
-    if length(old_label) == length(new_label) && all(strcmp(old_label,new_label))
-    	frf = old_frf;
-        disp('Reloading FRFs..')
-        return;
-    end
+else
+    old_frf.H = [];
+    old_frf.TestLabel = {};
 end
 
-disp('Loading FRFs..')
+[~,iReloadNew,iReloadOld] = intersect(new_label,old_frf.TestLabel);
 
-Data = read_signalcalc(frf_ascii_files);
-NTest = size(Data,1);
+NTest = length(frf_ascii_files);
+bLoad = true(NTest,1);
+bLoad(iReloadNew) = false;
+
+if ~any(bLoad)
+    frf = old_frf;
+    return;
+end
+
+iLoad = find(bLoad);
+NLoad = length(iLoad);
+files_to_load = frf_ascii_files(bLoad);
+
+disp('Loading new FRFs..')
+
+Data = read_signalcalc(files_to_load);
 NSig = size(Data,2);
 switch Data(1).Type
     case 'Time'
@@ -59,6 +71,8 @@ frf.w = V(1).Frequency + eps;
 Nfreq = length(frf.w);
 
 frf.H = zeros(Nfreq,NTest,NSig);
+frf.H(:,iReloadNew,:) = old_frf.H(:,iReloadOld,:);
+
 for k = 1:NSig
     %convert acc/vel to disp
     if strncmp(V(1,k).Units,['m/s' char(178)],4)
@@ -74,13 +88,13 @@ for k = 1:NSig
         units = V(1,k).Units;
     end
     
-    for i = 1:NTest
+    for i = 1:NLoad
         %flip sign if hammer in the negative direction
-        frf.H(:,i,k) = V(i,k).H ./ scale;
+        frf.H(:,iLoad(i),k) = V(i,k).H ./ scale;
     end
 end
 
 %get legend entries
-frf.TestLabel = {V(:,1).Label};
+frf.TestLabel = new_label;
 
 save(frf_mat_file,'-struct','frf');
