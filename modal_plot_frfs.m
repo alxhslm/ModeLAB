@@ -1,6 +1,6 @@
 function han = modal_plot_frfs(frf,setup,options)
 
-han.fig = figure;
+han.fig = figure('Name',setup.Name);
 NAccel = size(frf.H,3);
 Ntest = size(frf.H,2);
 

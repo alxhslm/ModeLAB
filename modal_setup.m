@@ -1,6 +1,9 @@
 function setup = modal_setup(setup_csv_file)
 P = read_setup_csv(setup_csv_file);
 
+path = fileparts(setup_csv_file);
+setup.Name = filename(path);
+
 %% Geometry
 setup.nAcc = [P.axAccel;
              P.ayAccel;
