@@ -29,6 +29,13 @@ setup.sTest = sHam*sAcc';
 setup.nHam = setup.nHam .* sHam;
 setup.nAcc = setup.nAcc .* sAcc;
 
+if ~isfield(P,'iHammer')
+    P.iHammer = 0*P.zHammer + 1;
+end
+if ~isfield(P,'iAccel')
+    P.iAccel = 0*P.zAccel + 1;
+end
+
 setup.iBodyHam = P.iHammer';
 setup.iBodyAcc = P.iAccel';
 
