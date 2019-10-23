@@ -110,7 +110,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
 
             for i = 1:NHam
                 for k = 1:NAccel
-                    modes.fit.H(iFit,i,k) = modal_par.H(i+(k-1)*NHam);
+                    modes.fit.H(iFit,i,k) = modal_par.H(:,i+(k-1)*NHam);
                 end
             end
 
@@ -126,7 +126,6 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
                 end
             end
         otherwise
-            
             if strcmp(options.method,'rfp')
                 for i = 1:NHam
                     %node that the frequency base may be different between tests
@@ -164,10 +163,10 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
             modes = modal_average(modes,exp,setup);
     end
     
-    % sort modes by frequency
-    [modes.omega,iSort] = sort(modes.omega);
-    modes.zeta  = modes.zeta(iSort);
-    modes.A  = modes.A(iSort,:,:);
+%     % sort modes by frequency
+%     [modes.omega,iSort] = sort(modes.omega);
+%     modes.zeta  = modes.zeta(iSort);
+%     modes.A  = modes.A(iSort,:,:);
     
     % work out the mode shapes from the modal constants
     disp('Extracting modeshapes..')
@@ -188,11 +187,11 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
             if options.bResidMass && options.bResidStiffness
                 [modes.resid.K(i,k),modes.resid.M(i,k)] = residual_mass_and_stiffness(exp.w(iFit)',real(u(iFit)),real(exp.H(iFit,i,k)));
             elseif options.bResidStiffness
-                modes.resid.K(i,k) = residual_stiffness(exp.w(iFit)',real(u(iFit)),real(exp.H(iFit,i,k)));
+                modes.resid.K(i,k) = residual_stiffness(exp.w(iFit),real(u(iFit)),real(exp.H(iFit,i,k)));
                 modes.resid.M(i,k) = Inf;
             elseif options.bResidMass
                 modes.resid.K(i,k) = Inf;
-                modes.resid.M(i,k) = residual_mass(exp.w(iFit)',real(u(iFit)),real(exp.H(iFit,i,k)));
+                modes.resid.M(i,k) = residual_mass(exp.w(iFit),real(u(iFit)),real(exp.H(iFit,i,k)));
             else
                 modes.resid.K(i,k) = Inf;
                 modes.resid.M(i,k) = Inf;

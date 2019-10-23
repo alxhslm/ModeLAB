@@ -32,10 +32,10 @@ files_to_load = frf_ascii_files(bLoad);
 disp('Loading new FRFs..')
 
 Data = read_signalcalc(files_to_load);
-NSig = size(Data,2);
 switch Data(1).Type
     case 'Time'
         Fs = 1/mean(diff(Data(1).Time));
+        NSig = size(Data,2);
         for i = 1:NTest
             for k = 2:NSig
                 [TF,Freq] = tfestimate(Data(i,1).Real,Data(i,k).Real,[],[],[],Fs);
@@ -66,6 +66,8 @@ switch Data(1).Type
             [V(i,:).Label] = deal(Data(i,1).Label);
         end
 end
+
+NSig = size(V,2);
 
 frf.w = V(1).Frequency + eps;
 Nfreq = length(frf.w);
