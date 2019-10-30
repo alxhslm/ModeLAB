@@ -53,7 +53,7 @@ if size(exp.H,3) > size(setup.rAcc,1)
     %trim frf
     warning('Not enough accelerometer points specified in setup csv')
     exp.H = exp.H(:,:,1:size(setup.rAcc,1));
-elseif size(exp.H,2) < size(setup.rAcc,1)
+elseif size(exp.H,3) < size(setup.rAcc,1)
     %trim setup
     warning('Too many accelerometer points specified in setup csv')
     setup.rAcc = setup.rAcc(1:size(exp.H,3),:);
