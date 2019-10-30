@@ -1,5 +1,11 @@
 function setup = modal_setup(setup_csv_file)
 P = read_setup_csv(setup_csv_file);
+if ~isfield(P,'iHammer')
+    P.iHammer = 0*P.zHammer + 1;
+end
+if ~isfield(P,'iAccel')
+    P.iAccel = 0*P.zAccel + 1;
+end
 
 path = fileparts(setup_csv_file);
 setup.Name = filename(path);
@@ -17,50 +23,21 @@ setup.rHam = [P.xHammer;
 setup.rAcc = [P.xAccel;
              P.yAccel;
              P.zAccel]';
-         
-NHam = size(setup.rHam,1);
-NAcc = size(setup.rAcc,1);
-
-%flip sign if accelerometer in the negative direction
-sHam = (1-2*any(setup.nHam < 0,2));
-sAcc = (1-2*any(setup.nAcc < 0,2));
-setup.sTest = sHam*sAcc';
-
-setup.nHam = setup.nHam .* sHam;
-setup.nAcc = setup.nAcc .* sAcc;
-
-if ~isfield(P,'iHammer')
-    P.iHammer = 0*P.zHammer + 1;
-end
-if ~isfield(P,'iAccel')
-    P.iAccel = 0*P.zAccel + 1;
-end
-
+                 
 setup.iBodyHam = P.iHammer';
 setup.iBodyAcc = P.iAccel';
+         
+setup.nAcc = normalise(setup.nAcc,2);
+setup.nHam = normalise(setup.nHam,2);
+         
+setup.NHam = size(setup.rHam,1);
+setup.NAcc = size(setup.rAcc,1);
 
-%identify how many unique points we have
-rLoc = [setup.rHam;
-        setup.rAcc];
-    
-nLoc = [setup.nHam;
-        setup.nAcc]; 
-
-A = [rLoc nLoc];
-[~,~,iC] = unique(A,'rows','stable');
-
-%find index of each hammer/accel location
-iHam = iC(1:NHam);
-iAcc = iC(NHam+1:end);
+setup = setup_sensors(setup);
+setup.geom = setup_geom(setup);
 
 %find driving point responses (where iHam == iAcc)
-setup.bDrivePt = false(NHam,NAcc);
-for k = 1:NAcc
-    ii = find(iHam == iAcc(k));
-    if ~isempty(ii)
-        setup.bDrivePt(ii,k) = true;
-    end
-end
+setup.bDrivePt = (setup.geom.iHam - setup.geom.iAcc') == 0;
 
 %% Frequency information
 setup.wBand = [P.fL' P.fH']*2*pi;
@@ -94,3 +71,61 @@ if ~isfield(P,'AccelName')
 else
     setup.AccName = P.AccelName;
 end
+
+function setup = setup_sensors(setup)
+nAcc = setup.nAcc;
+sAcc = ones(setup.NAcc,1);
+
+nHam = setup.nHam;
+sHam = ones(setup.NHam,1);
+
+%flip sign if accelerometer in the negative direction
+for i = 1:setup.NAcc
+    dotProd = nHam * nAcc(i,:)';
+    bOppositeDir = abs(dotProd + 1) < 1E-8;
+    bSameLoc = all(setup.rHam == setup.rAcc(i,:),2);
+    if any(bOppositeDir & bSameLoc)
+        sAcc(i) = -1;
+    end
+end
+nAcc = nAcc .* sAcc;
+
+[sHam,nHam] = flip_sensor_sign(sHam,nHam);
+[sAcc,nAcc] = flip_sensor_sign(sAcc,nAcc);
+
+setup.sTest = sHam*sAcc';
+setup.nHam = nHam;
+setup.nAcc = nAcc;
+
+function [s,n] = flip_sensor_sign(s,n)
+sHamFlip = (1-2*any(n < 0,2));
+s = sHamFlip .* s;
+n = sHamFlip .* n;
+
+function geom = setup_geom(setup)
+%identify how many unique points we have
+rLoc = [setup.rHam;
+        setup.rAcc];
+    
+nLoc = [setup.nHam;
+        setup.nAcc]; 
+
+A = [rLoc nLoc];
+[C,iA,iC] = unique(A,'rows','stable');
+
+%store unique set of points
+geom.r = C(:,1:3);
+geom.n = C(:,4:6);
+
+NHam = size(setup.rHam,1);
+
+%find which unique point each hammer/accel location corresponds to
+geom.iHam = iC(1:NHam);
+geom.iAcc = iC(NHam+1:end);
+
+%and which unique points come from hammer/accel
+geom.iFromHam = iA(iA <= NHam);
+geom.iFromAcc = iA(iA > NHam) - NHam;
+
+%finally, on which body is each unique point
+geom.iBody = [setup.iBodyHam(geom.iFromHam); setup.iBodyAcc(geom.iFromAcc)];

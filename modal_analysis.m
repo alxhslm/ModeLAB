@@ -170,8 +170,10 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
     
     % work out the mode shapes from the modal constants
     disp('Extracting modeshapes..')
-    modes.geom = modal_geom(setup);
-    modes.u = modal_shapes(modes);
+    modes.u = modal_shapes(modes,setup.geom);
+    modes.r = setup.geom.r;
+    modes.n = setup.geom.n;
+    modes.iBody = setup.geom.iBody;
     
     % Compute residual stiffness/mass terms if necessary
     modes.resid.K = zeros(NHam,NAccel);
@@ -180,7 +182,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
         for i = 1:NHam
             u = zeros(Nfreq,1);
             for j = 1:Nmodes
-                u = u + modes.u(modes.geom.iHam(i),j) * modes.u(modes.geom.iAcc(k),j)./ (-exp.w.^2 + 2*1i*modes.omega(j)*modes.zeta(j)*exp.w + modes.omega(j)^2);
+                u = u + modes.u(setup.geom.iHam(i),j) * modes.u(setup.geom.iAcc(k),j)./ (-exp.w.^2 + 2*1i*modes.omega(j)*modes.zeta(j)*exp.w + modes.omega(j)^2);
             end
             
             iFit = exp.w > setup.wMin & exp.w < setup.wMax;
@@ -243,7 +245,7 @@ if ~isfile(model_mat_file) || moddate(modes_mat_file) > moddate(model_mat_file)
         for k = 1:NAccel
             model.H(:,i,k) = - 1./(modes.resid.M(i,k)*model.w.^2) + 1/modes.resid.K(i,k);
             for j = 1:Nmodes
-                model.H(:,i,k) = model.H(:,i,k) + modes.u(modes.geom.iHam(i),j) * modes.u(modes.geom.iAcc(k),j)./ (-model.w.^2 + 2*1i*modes.omega(j)*modes.zeta(j)*model.w + modes.omega(j)^2);
+                model.H(:,i,k) = model.H(:,i,k) + modes.u(setup.geom.iHam(i),j) * modes.u(setup.geom.iAcc(k),j)./ (-model.w.^2 + 2*1i*modes.omega(j)*modes.zeta(j)*model.w + modes.omega(j)^2);
             end
         end
     end

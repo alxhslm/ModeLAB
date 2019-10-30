@@ -1,6 +1,4 @@
-function Vloc = modal_shapes(modes)
-geom = modes.geom;
-
+function Vloc = modal_shapes(modes,geom)
 Nmodes = size(modes.A,1);
 
 %find least squared solution for each mode shape
