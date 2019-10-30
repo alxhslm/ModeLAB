@@ -264,6 +264,29 @@ end
 
 han.model = modal_plot_frfs(model,setup,options);
 
+figure('Name',['Comparison: ' setup.Name]);
+
+for i = 1:NHam
+    for k = 1:NAccel       
+        axCompare(i,k) = subplot(NHam,NAccel,(i-1)*NAccel+k);
+        hold on
+        if i == 1
+        title(setup.AccName{k});
+        end
+        if k == 1
+            ylabel(exp.TestLabel{i});
+        end
+        set(axCompare(i,k),'yscale','log')
+        xlabel('f (Hz)')
+        plot(exp.w/2/pi,abs(exp.H(:,i,k)));
+        plot(model.w/2/pi,abs(model.H(:,i,k)));
+    end
+end
+
+linkaxes(axCompare(:),'x');
+legend(axCompare(end),{'Exp','Model'},'AutoUpdate','off')
+xlim(axCompare(1),[setup.wMin setup.wMax]/2/pi);
+
 function [K,M] = residual_mass_and_stiffness(w,u,y)
 c = [0*w+1 -1./(w.^2)]\(y-u);
 K = 1/c(1);
