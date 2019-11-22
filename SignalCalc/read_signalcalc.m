@@ -24,10 +24,10 @@ if ~iscell(file)
         [sig,chan,units,data] = multi_chan(fid);
     else
         %single channel format
-        [sig,chan,units,data] = single_chan(fid);
+        [sig,chan,units,data] = single_chan(fid,label(1));
     end
 
-    switch sig{1}(1)
+    switch label(1)
         case {'X','W'}
             type = 'Time';
         case 'H'
@@ -134,7 +134,7 @@ else
     end
 end
 
-function [sig,chan,units,data] = single_chan(fid)
+function [sig,chan,units,data] = single_chan(fid,label)
 %extract complete header
 i = 1;
 hdr{1} = fgetl(fid);
@@ -146,7 +146,7 @@ end
 hdr{end+1} = fgetl(fid);
 
 %no signal name for single channel files
-sig = {''};
+sig = {[label '1']};
 NSig = 1;
 
 %extract channel names
