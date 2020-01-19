@@ -18,7 +18,7 @@ for j = 1:Nmodes
     end
     
     iBad = isnan(wj) | isnan(zj) |  wj > setup.wBand(j,2) | wj < setup.wBand(j,1) | zj < 0;
-    iBad = iBad | ~setup.bDrivePt;
+    iBad = iBad & ~setup.bDrivePt;
     
     wj(iBad) = NaN;
    
@@ -32,6 +32,5 @@ for j = 1:Nmodes
     modes.zeta(j) = mean(zj(~iBad));
     
     H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
-
 end
 modes.A = reshape(H(iFit,:) \ reshape(exp.H(iFit,:,:),sum(iFit),[]),[Nmodes NHam NAccel]);
