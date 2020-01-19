@@ -6,7 +6,11 @@ C = {};
 X = {};
 while ~feof(fid)
     line = fgetl(fid);
-    if line(1) ~= '%'
+    iComment = find(line == '%',1);
+    if ~isempty(iComment)
+        line = line(1:(iComment-1));
+    end
+    if ~isempty(line)
         row = textscan(line,['%s' repmat('%s',1,50)],'Delimiter',',','CollectOutput',true);     
         field = row{1}{1};
         data = row{1}(2:end);
