@@ -266,9 +266,9 @@ han.model = modal_plot_frfs(model,setup,options);
 
 figure('Name',['Comparison: ' setup.Name]);
 
-for i = 1:min(NHam,8)
+for i = 1:NHam
     for k = 1:NAccel       
-        axCompare(i,k) = subplot(min(NHam,8),NAccel,(i-1)*NAccel+k);
+        axCompare(i,k) = subplot(max(NHam,8),NAccel,(i-1)*NAccel+k);
         yyaxis left
         hold on
         if i == 1
@@ -277,12 +277,9 @@ for i = 1:min(NHam,8)
         if k == 1
             ylabel(sprintf('%s\n%s',exp.TestLabel{i},'Mag (m/N)'));
         end
-        if k == NAccel
-            ylabel('Phase (deg)')
-        end
         set(axCompare(i,k),'yscale','log')
-               
-        xlabel('f (Hz)')
+        
+        if i == NHam, xlabel('f (Hz)'),  end
         plot(exp.w/2/pi,abs(exp.H(:,i,k)));
         plot(model.w/2/pi,abs(model.H(:,i,k)));
         
@@ -292,6 +289,11 @@ for i = 1:min(NHam,8)
         phExp = phModel + wrapToPi(phExp - phModel);
         plot(exp.w/2/pi,180/pi*phExp);
         plot(model.w/2/pi,180/pi*phModel);
+        if i == NHam, xlabel('f (Hz)'),  end
+        
+        if k == NAccel
+            ylabel('Phase (deg)')
+        end
     end
 end
 
