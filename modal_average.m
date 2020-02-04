@@ -17,7 +17,8 @@ for j = 1:Nmodes
         end
     end
     
-    iBad = isnan(wj) | isnan(zj) |  wj > setup.wBand(j,2) | wj < setup.wBand(j,1) | zj < 0;
+    iBad = ~(setup.iParallel & setup.iSameBody);
+    iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.wBand(j,2) | wj < setup.wBand(j,1) | zj < 0;
     iBad = iBad & ~setup.bDrivePt;
     
     wj(iBad) = NaN;

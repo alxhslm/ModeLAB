@@ -36,6 +36,11 @@ setup.NAcc = size(setup.rAcc,1);
 setup = setup_sensors(setup);
 setup.geom = setup_geom(setup);
 
+for i = 1:size(setup.nAcc,1)
+   setup.iParallel(:,i) =  setup.nHam * setup.nAcc(i,:)' == 1;
+   setup.iSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
+end
+
 %find driving point responses (where iHam == iAcc)
 setup.bDrivePt = (setup.geom.iHam - setup.geom.iAcc') == 0;
 
