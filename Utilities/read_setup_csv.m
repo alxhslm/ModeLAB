@@ -34,3 +34,10 @@ for i = 1:length(C)
         P.(C{i}) = X{i};
     end
 end
+
+if isfield(P,'fL')
+    P.fLMode = P.fL;
+end
+if isfield(P,'fH')
+    P.fHMode = P.fH;
+end

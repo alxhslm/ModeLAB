@@ -10,7 +10,7 @@ for j = 1:Nmodes
     max_curr = -Inf;
     kMax = 1;
     for k = 1:length(geom.iAcc)
-        iDrivePt = find(geom.bDrivePt(:,k));
+        iDrivePt = find(geom.bDrivePt(:,k) & geom.bModeAcc(k,j));
         if ~isempty(iDrivePt) && V_exp(k,iDrivePt) > max_curr
              kMax = k;
              iMax = iDrivePt;

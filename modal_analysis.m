@@ -26,13 +26,44 @@ if ~isfile(setup_mat_file) || moddate(setup_csv_file) > moddate(setup_mat_file)
     save(setup_mat_file,'-struct','setup')
 else
     setup = load(setup_mat_file);
-end
 
-if isfield(setup,'bDrivePt')
-    setup.geom.bDrivePt = setup.bDrivePt;
-    setup = rmfield(setup,'bDrivePt');
+    if isfield(setup,'bDrivePt')
+        setup.geom.bDrivePt = setup.bDrivePt;
+        setup = rmfield(setup,'bDrivePt');
+        save(setup_mat_file,'-struct','setup')
+    end
+    
+    if isfield(setup,'wBand')
+        setup.modes.wBand = setup.wBand;
+        setup = rmfield(setup,'wBand');
+    end
+    
+    if ~isfield(setup.geom,'bModeHam')
+        setup.geom.bModeHam = true(setup.NHam,size(setup.modes.wBand,1));
+        setup.geom.bModeAcc = true(setup.NAcc,size(setup.modes.wBand,1));
+    end
+    
+    if ~isfield(setup.geom,'bHamAccParallel')
+        if isfield(setup,'iParallel')
+            setup.geom.bHamAccParallel = setup.iParallel;
+            setup.geom.bHamAccSameBody = setup.iSameBody;
+            setup = rmfield(setup,'iParallel');
+            setup = rmfield(setup,'iSameBody');
+        else
+            for i = 1:size(setup.nAcc,1)
+                setup.geom.bHamAccParallel(:,i) = setup.nHam * setup.nAcc(i,:)' == 1;
+                setup.geom.bHamAccSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
+            end
+        end
+    end
+    
+    if ~isfield(setup,'options')
+        setup.options.bFitBand = 0;
+    end
+    
     save(setup_mat_file,'-struct','setup')
 end
+
 
 %% Extract FRFs and store in matrix
 exp_mat_file = fullfile(dataroot, 'exp.mat'); 
@@ -82,7 +113,7 @@ for k = 1:NAccel
     end
 end
 
-Nmodes = size(setup.wBand,1);
+Nmodes = size(setup.modes.wBand,1);
 options = default_options(options,NHam,Nmodes);
 
 %% Plot FRFs
@@ -91,7 +122,7 @@ han.exp = modal_plot_frfs(exp,setup,options);
 
 %highlight each mode
 for j = 1:Nmodes
-    wPlot = setup.wBand(j,[1 2 2 1 1]);
+    wPlot = setup.modes.wBand(j,[1 2 2 1 1]);
     
     for k = 1:NAccel
         yPlot = ylim(han.exp.axMag(k)); yPlot = yPlot([1 1 2 2 1]);
@@ -155,7 +186,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
                     for k = 1:NAccel
                         for j = 1:Nmodes
                             %find the model.peaks in the specified range
-                            iBand = exp.w(2:end-1) > setup.wBand(j,1) & exp.w(2:end-1) < setup.wBand(j,2);
+                            iBand = exp.w(2:end-1) > setup.modes.wBand(j,1) & exp.w(2:end-1) < setup.modes.wBand(j,2);
                             modes.peak(i,j,k) = feval(options.method,exp.w(iBand),exp.H(iBand,i,k));
                             
                             %compute fit of mode

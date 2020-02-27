@@ -3,7 +3,6 @@ function modes = modal_average(modes,exp,setup)
 %estimates of natural frequency etc.
 
 [NHam,Nmodes,NAccel] = size(modes.peak);
-iFit = exp.w > setup.wMin & exp.w < setup.wMax;
 H = zeros(length(exp.w),Nmodes);
 for j = 1:Nmodes
     wj = zeros(NHam,NAccel);
@@ -17,10 +16,10 @@ for j = 1:Nmodes
         end
     end
     
-    iBad = ~(setup.iParallel & setup.iSameBody);
-    iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.wBand(j,2) | wj < setup.wBand(j,1) | zj < 0;
-    iBad = iBad & ~setup.geom.bDrivePt;
-    
+    iBad = ~(setup.geom.bModeHam(:,j) & setup.geom.bModeAcc(:,j)');
+    iBad = iBad | ~(setup.geom.bHamAccParallel & setup.geom.bHamAccSameBody);
+    iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.modes.wBand(j,2) | wj < setup.modes.wBand(j,1) | zj < 0;
+
     wj(iBad) = NaN;
     [~,iwReject] = deleteoutliers(wj,0.5);
     iBad = iBad | (iwReject & ~setup.geom.bDrivePt);
@@ -34,7 +33,7 @@ for j = 1:Nmodes
     H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
     
     if setup.options.bFitBand
-        iFit = exp.w > setup.wBand(j,1) &  exp.w < setup.wBand(j,2);
+        iFit = exp.w > setup.modes.wBand(j,1) &  exp.w < setup.modes.wBand(j,2);
         modes.A(j,:,:) = reshape(H(iFit,j)\reshape(exp.H(iFit,:,:),sum(iFit),[]),[1 NHam NAccel]);
     end
 end
@@ -42,5 +41,4 @@ end
 if ~setup.options.bFitBand
     iFit = exp.w > setup.wMin & exp.w < setup.wMax;
     modes.A = reshape(H(iFit,:) \ reshape(exp.H(iFit,:,:),sum(iFit),[]),[Nmodes NHam NAccel]);
-
 end

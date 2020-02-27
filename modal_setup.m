@@ -34,18 +34,12 @@ setup.NHam = size(setup.rHam,1);
 setup.NAcc = size(setup.rAcc,1);
 
 setup = setup_sensors(setup);
+
+setup.modes = setup_modes(P);
+
 setup.geom = setup_geom(setup);
 
-for i = 1:size(setup.nAcc,1)
-   setup.iParallel(:,i) =  setup.nHam * setup.nAcc(i,:)' == 1;
-   setup.iSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
-end
-
-
 %% Frequency information
-setup.wBand = [P.fL' P.fH']*2*pi;
-setup.wEst = mean(setup.wBand,2);
-
 if isfield(P,'fMin')
     setup.wMin = P.fMin*2*pi;
 else
@@ -138,6 +132,23 @@ geom.iBody = [setup.iBodyHam(geom.iFromHam); setup.iBodyAcc(geom.iFromAcc)];
 %find driving point responses (where iHam == iAcc)
 geom.bDrivePt = (geom.iHam - geom.iAcc') == 0;
 
+for i = 1:size(setup.nAcc,1)
+   geom.bHamAccParallel(:,i) =  setup.nHam * setup.nAcc(i,:)' == 1;
+   geom.bHamAccSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
+end
+
+%check if each test is in the direction of each mode
+if isfield(setup.modes,'nMode')
+    for k = 1:setup.modes.Nmodes
+        geom.bModeAcc(:,k) = setup.nAcc * setup.modes.nMode(k,:)' == 1;
+        geom.bModeHam(:,k) = setup.nHam * setup.modes.nMode(k,:)' == 1;
+    end
+else
+    geom.bModeAcc = true(setup.NAcc,setup.modes.Nmodes);
+    geom.bModeHam = true(setup.NHam,setup.modes.Nmodes);
+end
+
+
 function options = setup_options(P)
 if isfield(P,'bFitBand')
     options.bFitBand = P.bFitBand;
@@ -145,3 +156,12 @@ else
     options.bFitBand = false;
 end
 
+function modes = setup_modes(P)
+modes.wBand = [P.fLMode' P.fHMode']*2*pi;
+modes.wEst = mean(modes.wBand,2);
+
+modes.Nmodes = size(modes.wBand,1);
+
+if isfield(P,'uxMode')
+    modes.nMode = [P.uxMode'  P.uyMode' P.uzMode'];
+end
