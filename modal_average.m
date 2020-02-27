@@ -32,5 +32,15 @@ for j = 1:Nmodes
     modes.zeta(j) = mean(zj(~iBad),'omitnan');
     
     H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
+    
+    if setup.options.bFitBand
+        iFit = exp.w > setup.wBand(j,1) &  exp.w < setup.wBand(j,2);
+        modes.A(j,:,:) = reshape(H(iFit,j)\reshape(exp.H(iFit,:,:),sum(iFit),[]),[1 NHam NAccel]);
+    end
 end
-modes.A = reshape(H(iFit,:) \ reshape(exp.H(iFit,:,:),sum(iFit),[]),[Nmodes NHam NAccel]);
+
+if ~setup.options.bFitBand
+    iFit = exp.w > setup.wMin & exp.w < setup.wMax;
+    modes.A = reshape(H(iFit,:) \ reshape(exp.H(iFit,:,:),sum(iFit),[]),[Nmodes NHam NAccel]);
+
+end

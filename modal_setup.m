@@ -75,6 +75,8 @@ else
     setup.AccName = P.AccelName;
 end
 
+setup.options = setup_options(P);
+
 function setup = setup_sensors(setup)
 nAcc = setup.nAcc;
 sAcc = ones(setup.NAcc,1);
@@ -135,4 +137,11 @@ geom.iBody = [setup.iBodyHam(geom.iFromHam); setup.iBodyAcc(geom.iFromAcc)];
 
 %find driving point responses (where iHam == iAcc)
 geom.bDrivePt = (geom.iHam - geom.iAcc') == 0;
+
+function options = setup_options(P)
+if isfield(P,'bFitBand')
+    options.bFitBand = P.bFitBand;
+else
+    options.bFitBand = false;
+end
 
