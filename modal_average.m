@@ -22,15 +22,14 @@ for j = 1:Nmodes
     iBad = iBad & ~setup.bDrivePt;
     
     wj(iBad) = NaN;
-   
     [~,iwReject] = deleteoutliers(wj,0.5);
     iBad = iBad | (iwReject & ~setup.bDrivePt);
-    modes.omega(j) = mean(wj(~iBad));
+    modes.omega(j) = mean(wj(~iBad),'omitnan');
 
     zj(iBad) = NaN;
     [~,izReject] = deleteoutliers(zj,0.5);
     iBad = iBad | (izReject & ~setup.bDrivePt);
-    modes.zeta(j) = mean(zj(~iBad));
+    modes.zeta(j) = mean(zj(~iBad),'omitnan');
     
     H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
 end
