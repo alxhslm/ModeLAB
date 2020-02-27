@@ -41,8 +41,6 @@ for i = 1:size(setup.nAcc,1)
    setup.iSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
 end
 
-%find driving point responses (where iHam == iAcc)
-setup.bDrivePt = (setup.geom.iHam - setup.geom.iAcc') == 0;
 
 %% Frequency information
 setup.wBand = [P.fL' P.fH']*2*pi;
@@ -134,3 +132,7 @@ geom.iFromAcc = iA(iA > NHam) - NHam;
 
 %finally, on which body is each unique point
 geom.iBody = [setup.iBodyHam(geom.iFromHam); setup.iBodyAcc(geom.iFromAcc)];
+
+%find driving point responses (where iHam == iAcc)
+geom.bDrivePt = (geom.iHam - geom.iAcc') == 0;
+

@@ -28,6 +28,12 @@ else
     setup = load(setup_mat_file);
 end
 
+if isfield(setup,'bDrivePt')
+    setup.geom.bDrivePt = setup.bDrivePt;
+    setup = rmfield(setup,'bDrivePt');
+    save(setup_mat_file,'-struct','setup')
+end
+
 %% Extract FRFs and store in matrix
 exp_mat_file = fullfile(dataroot, 'exp.mat'); 
 exp = modal_load_frfs(dataroot);   
@@ -46,7 +52,7 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     setup.nHam = setup.nHam(1:size(exp.H,2),:);
     setup.iBodyHam = setup.iBodyHam(1:size(exp.H,2));
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
-    setup.bDrivePt = setup.bDrivePt(1:size(exp.H,2),:);
+    setup.geom.bDrivePt = setup.geom.bDrivePt(1:size(exp.H,2),:);
 end
 
 if size(exp.H,3) > size(setup.rAcc,1)
@@ -61,7 +67,7 @@ elseif size(exp.H,3) < size(setup.rAcc,1)
     setup.iBodyAcc = setup.iBodyAcc(1:size(exp.H,3));
     
     setup.sTest = setup.sTest(1:size(exp.H,3),:);
-    setup.bDrivePt = setup.bDrivePt(1:size(exp.H,3),:);
+    setup.geom.bDrivePt = setup.geom.bDrivePt(1:size(exp.H,3),:);
     setup.AccLabel = setup.AccLabel(1:size(exp.H,3));
 end
 

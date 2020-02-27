@@ -19,16 +19,16 @@ for j = 1:Nmodes
     
     iBad = ~(setup.iParallel & setup.iSameBody);
     iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.wBand(j,2) | wj < setup.wBand(j,1) | zj < 0;
-    iBad = iBad & ~setup.bDrivePt;
+    iBad = iBad & ~setup.geom.bDrivePt;
     
     wj(iBad) = NaN;
     [~,iwReject] = deleteoutliers(wj,0.5);
-    iBad = iBad | (iwReject & ~setup.bDrivePt);
+    iBad = iBad | (iwReject & ~setup.geom.bDrivePt);
     modes.omega(j) = mean(wj(~iBad),'omitnan');
 
     zj(iBad) = NaN;
     [~,izReject] = deleteoutliers(zj,0.5);
-    iBad = iBad | (izReject & ~setup.bDrivePt);
+    iBad = iBad | (izReject & ~setup.geom.bDrivePt);
     modes.zeta(j) = mean(zj(~iBad),'omitnan');
     
     H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);

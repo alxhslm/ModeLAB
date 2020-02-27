@@ -26,7 +26,7 @@ for i = 1:Ntest
         han.hMag(i,k) = plot(han.axMag(k),frf.w/2/pi,abs(frf.H(:,i,k)),'-','color',options.test_col(i,:));
         han.hPh(i,k)  = plot(han.axPh(k) ,frf.w/2/pi,angle(frf.H(:,i,k))*180/pi ,'color',options.test_col(i,:));
         
-        if setup.bDrivePt(i,k)
+        if setup.geom.bDrivePt(i,k)
             set(han.hMag(i,k),'LineWidth',2)
             set(han.hPh(i,k),'LineWidth',2)
         end
