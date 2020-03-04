@@ -44,7 +44,7 @@ exp_mat_file = fullfile(dataroot, 'exp.mat');
 exp = modal_load_frfs(dataroot);   
 
 %% Trim frf / geomtery
-
+bSkip = any(isnan(setup.rHam),2);
 if size(exp.H,2) > size(setup.rHam,1)
     %trim frf
     warning('Not enough hammer points specified in setup csv')
@@ -58,6 +58,12 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     setup.iBodyHam = setup.iBodyHam(1:size(exp.H,2));
     
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
+elseif any(bSkip)
+    setup.rHam = setup.rHam(~bSkip,:);
+    setup.nHam = setup.nHam(~bSkip,:);
+    setup.iBodyHam = setup.iBodyHam(~bSkip,:);
+    exp.H = exp.H(:,~bSkip,:);
+    exp.TestLabel = exp.TestLabel(~bSkip);
 end
 
 if size(exp.H,3) > size(setup.rAcc,1)

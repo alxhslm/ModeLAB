@@ -14,7 +14,8 @@ while ~feof(fid)
         row = textscan(line,['%s' repmat('%s',1,50)],'Delimiter',',','CollectOutput',true);     
         field = row{1}{1};
         data = row{1}(2:end);
-        data = data(~cellfun(@isempty,data));
+        data = data(1:find(~cellfun(@isempty,data),1,'last'));
+        data(cellfun(@isempty,data)) = {NaN};
         if field(1) ~= '#'
             if isempty(data)
                 data = [];
