@@ -26,37 +26,10 @@ if ~isfile(setup_mat_file) || moddate(setup_csv_file) > moddate(setup_mat_file)
     save(setup_mat_file,'-struct','setup')
 else
     setup = load(setup_mat_file);
-
-    if isfield(setup,'bDrivePt')
-        setup.geom.bDrivePt = setup.bDrivePt;
-        setup = rmfield(setup,'bDrivePt');
-        save(setup_mat_file,'-struct','setup')
-    end
     
     if isfield(setup,'wBand')
         setup.modes.wBand = setup.wBand;
         setup = rmfield(setup,'wBand');
-        save(setup_mat_file,'-struct','setup')
-    end
-    
-    if ~isfield(setup.geom,'bModeHam')
-        setup.geom.bModeHam = true(setup.NHam,size(setup.modes.wBand,1));
-        setup.geom.bModeAcc = true(setup.NAcc,size(setup.modes.wBand,1));
-        save(setup_mat_file,'-struct','setup')
-    end
-    
-    if ~isfield(setup.geom,'bHamAccParallel')
-        if isfield(setup,'iParallel')
-            setup.geom.bHamAccParallel = setup.iParallel;
-            setup.geom.bHamAccSameBody = setup.iSameBody;
-            setup = rmfield(setup,'iParallel');
-            setup = rmfield(setup,'iSameBody');
-        else
-            for i = 1:size(setup.nAcc,1)
-                setup.geom.bHamAccParallel(:,i) = setup.nHam * setup.nAcc(i,:)' == 1;
-                setup.geom.bHamAccSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
-            end
-        end
         save(setup_mat_file,'-struct','setup')
     end
     
@@ -83,8 +56,8 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     setup.rHam = setup.rHam(1:size(exp.H,2),:);
     setup.nHam = setup.nHam(1:size(exp.H,2),:);
     setup.iBodyHam = setup.iBodyHam(1:size(exp.H,2));
+    
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
-    setup.geom.bDrivePt = setup.geom.bDrivePt(1:size(exp.H,2),:);
 end
 
 if size(exp.H,3) > size(setup.rAcc,1)
@@ -99,10 +72,13 @@ elseif size(exp.H,3) < size(setup.rAcc,1)
     setup.iBodyAcc = setup.iBodyAcc(1:size(exp.H,3));
     
     setup.sTest = setup.sTest(1:size(exp.H,3),:);
-    setup.geom.bDrivePt = setup.geom.bDrivePt(1:size(exp.H,3),:);
+    
     setup.AccLabel = setup.AccLabel(1:size(exp.H,3));
 end
 
+setup.geom = modal_geom(setup);
+save(setup_mat_file,'-struct','setup')
+ 
 NAccel = size(exp.H,3);
 NHam  = size(exp.H,2);
 Nfreq = length(exp.w);
