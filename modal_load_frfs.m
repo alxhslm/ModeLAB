@@ -7,7 +7,7 @@ frf_ascii_files = strcat({d(:).folder},filesep,{d(:).name})';
 
 frf_mat_file = fullfile(dataroot, 'exp.mat'); 
 if isfile(frf_mat_file)
-    disp('Reloading FRFs..')
+    disp('--Reloading FRFs')
     old_frf = load(frf_mat_file);
 else
     old_frf.H = [];

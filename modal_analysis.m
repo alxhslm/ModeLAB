@@ -118,26 +118,28 @@ Nmodes = size(setup.modes.wBand,1);
 options = default_options(options,NHam,Nmodes);
 
 %% Plot FRFs
-disp('Plotting FRFs...')
-han.exp = modal_plot_frfs(exp,setup,options);
+if options.bPlotExp
+    disp('--Plotting FRFs...')
+    han.exp = modal_plot_frfs(exp,setup,options);
 
-%highlight each mode
-for j = 1:Nmodes
-    wPlot = setup.modes.wBand(j,[1 2 2 1 1]);
-    
-    for k = 1:NAccel
-        yPlot = ylim(han.exp.axMag(k)); yPlot = yPlot([1 1 2 2 1]);
-        han.exp.hPatchMag(j,k) = patch(han.exp.axMag(k),wPlot/2/pi,yPlot,options.mode_col(j,:),'FaceAlpha',0.3,'EdgeColor','none');
-        
-        yPlot = ylim(han.exp.axPh(k)); yPlot = yPlot([1 1 2 2 1]);
-        han.exp.hPatchPh(j,k)  = patch(han.exp.axPh(k) ,wPlot/2/pi,yPlot,options.mode_col(j,:),'FaceAlpha',0.3,'EdgeColor','none');
+    %highlight each mode
+    for j = 1:Nmodes
+        wPlot = setup.modes.wBand(j,[1 2 2 1 1]);
+
+        for k = 1:NAccel
+            yPlot = ylim(han.exp.axMag(k)); yPlot = yPlot([1 1 2 2 1]);
+            han.exp.hPatchMag(j,k) = patch(han.exp.axMag(k),wPlot/2/pi,yPlot,options.mode_col(j,:),'FaceAlpha',0.3,'EdgeColor','none');
+
+            yPlot = ylim(han.exp.axPh(k)); yPlot = yPlot([1 1 2 2 1]);
+            han.exp.hPatchPh(j,k)  = patch(han.exp.axPh(k) ,wPlot/2/pi,yPlot,options.mode_col(j,:),'FaceAlpha',0.3,'EdgeColor','none');
+        end
     end
 end
 
 %% Extract natural frequencies and damping ratios
 modes_mat_file = fullfile(dataroot, 'modes.mat'); 
 if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) || moddate(exp_mat_file) > moddate(modes_mat_file)
-    disp('Isolating peaks..')
+    disp('--Identifying modes..')
     modes.fit.w = exp.w;
     modes.fit.H = NaN(Nfreq,NHam,NAccel);
     switch options.method
@@ -197,7 +199,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
                 end
             end
             
-            disp('Extracting natural frequencies and modal damping...')
+            disp('--Extracting natural frequencies and modal damping...')
             modes = modal_average(modes,exp,setup);
     end
     
@@ -207,7 +209,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
 %     modes.A  = modes.A(iSort,:,:);
     
     % work out the mode shapes from the modal constants
-    disp('Extracting modeshapes..')
+    disp('--Extracting modeshapes..')
     modes.u = modal_shapes(modes,setup.geom);
     modes.r = setup.geom.r;
     modes.n = setup.geom.n;
@@ -241,42 +243,36 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
     
     save(modes_mat_file,'-struct','modes');
 else
+    disp('--Loading previously identified modes...')
     modes = load(modes_mat_file);
 end
 
-% %plot fit at each mode
-% for i = 1:NHam
-%     for k = 1:NAccel
-%         plot(han.exp.axMag(k),exp.w/2/pi,abs(modes.fit.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
-%         plot(han.exp.axPh(k) ,exp.w/2/pi,angle(modes.fit.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
-%     end
-% end
+if options.bPlotExp
+    %plot the modal constants on FRF
+    for j = 1:Nmodes
+        for i = 1:NHam
+            for k = 1:NAccel
+                scale = (2*1i*modes.omega(j)^2*modes.zeta(j));
+                Hmax = modes.A(j,i,k)./scale;
+                plot(han.exp.axMag(k),modes.omega(j)/2/pi,abs(Hmax),   'x','color',options.test_col(i,:));
+                plot(han.exp.axPh(k) ,modes.omega(j)/2/pi,angle(Hmax)*180/pi,'x','color',options.test_col(i,:));
+            end
+        end
+    end
 
-
-%plot the modal constants on FRF
-for j = 1:Nmodes
-    for i = 1:NHam
-        for k = 1:NAccel
-            scale = (2*1i*modes.omega(j)^2*modes.zeta(j));
-            Hmax = modes.A(j,i,k)./scale;
-            plot(han.exp.axMag(k),modes.omega(j)/2/pi,abs(Hmax),   'x','color',options.test_col(i,:));
-            plot(han.exp.axPh(k) ,modes.omega(j)/2/pi,angle(Hmax)*180/pi,'x','color',options.test_col(i,:));
+    %plot natural frequencies on FRF
+    for k = 1:NAccel
+        for j = 1:Nmodes
+            han.exp.hResMag(j,k) = plot(han.exp.axMag(k),modes.omega(j)/2/pi*[1 1],ylim(han.exp.axMag(k)),'color',options.mode_col(j,:));
+            han.exp.hResPh(j,k)  = plot(han.exp.axPh(k) ,modes.omega(j)/2/pi*[1 1],ylim(han.exp.axPh(k)) ,'color',options.mode_col(j,:));
         end
     end
 end
 
-%plot natural frequencies on FRF
-for k = 1:NAccel
-    for j = 1:Nmodes
-        han.exp.hResMag(j,k) = plot(han.exp.axMag(k),modes.omega(j)/2/pi*[1 1],ylim(han.exp.axMag(k)),'color',options.mode_col(j,:));
-        han.exp.hResPh(j,k)  = plot(han.exp.axPh(k) ,modes.omega(j)/2/pi*[1 1],ylim(han.exp.axPh(k)) ,'color',options.mode_col(j,:));
-    end
-end
-
-
 %% Compute synthesised FRFs
 model_mat_file = fullfile(dataroot,'model.mat');
 if ~isfile(model_mat_file) || moddate(modes_mat_file) > moddate(model_mat_file)
+    disp('--Computing synthesised FRFs...')
     model.w = exp.w;
     model.TestLabel = exp.TestLabel;
     for i = 1:NHam
@@ -289,55 +285,51 @@ if ~isfile(model_mat_file) || moddate(modes_mat_file) > moddate(model_mat_file)
     end
     save(model_mat_file,'-struct','model')
 else
+    disp('--Reloading synthesised FRFs...')
     model = load(model_mat_file);
 end
 
-% %overlay model fit with experimental data
-% for i = 1:NHam
-%     for k = 1:NAccel
-%         plot(han.exp.axMag(k),exp.w/2/pi,abs(model.H(:,i,k)),'color',options.test_col(i,:),'LineStyle','--')
-%         plot(han.exp.axPh(k) ,exp.w/2/pi,angle(model.H(:,i,k))*180/pi,'color',options.test_col(i,:),'LineStyle','--')
-%     end
-% end
-
-han.model = modal_plot_frfs(model,setup,options);
-
-figure('Name',['Comparison: ' setup.Name]);
-
-for i = 1:NHam
-    for k = 1:NAccel       
-        axCompare(i,k) = subplot(max(NHam,8),NAccel,(i-1)*NAccel+k);
-        yyaxis left
-        hold on
-        if i == 1
-            title(setup.AccName{k});
-        end
-        if k == 1
-            ylabel(sprintf('%s\n%s',exp.TestLabel{i},'Mag (m/N)'));
-        end
-        set(axCompare(i,k),'yscale','log')
-        
-        if i == NHam, xlabel('f (Hz)'),  end
-        plot(exp.w/2/pi,abs(exp.H(:,i,k)));
-        plot(model.w/2/pi,abs(model.H(:,i,k)));
-        
-        yyaxis right
-        phExp = angle(exp.H(:,i,k));
-        phModel = unwrap(angle(model.H(:,i,k)));
-        phExp = phModel + wrapToPi(phExp - phModel);
-        plot(exp.w/2/pi,180/pi*phExp);
-        plot(model.w/2/pi,180/pi*phModel);
-        if i == NHam, xlabel('f (Hz)'),  end
-        
-        if k == NAccel
-            ylabel('Phase (deg)')
-        end
-    end
+if options.bPlotModel
+    han.model = modal_plot_frfs(model,setup,options);
 end
 
-linkaxes(axCompare(:),'x');
-legend(axCompare(end),{'Exp','Model'},'AutoUpdate','off')
-xlim(axCompare(1),[setup.wMin setup.wMax]/2/pi);
+if options.bPlotComparison
+    figure('Name',['Comparison: ' setup.Name]);
+    for i = 1:NHam
+        for k = 1:NAccel       
+            axCompare(i,k) = subplot(max(NHam,8),NAccel,(i-1)*NAccel+k);
+            yyaxis left
+            hold on
+            if i == 1
+                title(setup.AccName{k});
+            end
+            if k == 1
+                ylabel(sprintf('%s\n%s',exp.TestLabel{i},'Mag (m/N)'));
+            end
+            set(axCompare(i,k),'yscale','log')
+
+            if i == NHam, xlabel('f (Hz)'),  end
+            plot(exp.w/2/pi,abs(exp.H(:,i,k)));
+            plot(model.w/2/pi,abs(model.H(:,i,k)));
+
+            yyaxis right
+            phExp = angle(exp.H(:,i,k));
+            phModel = unwrap(angle(model.H(:,i,k)));
+            phExp = phModel + wrapToPi(phExp - phModel);
+            plot(exp.w/2/pi,180/pi*phExp);
+            plot(model.w/2/pi,180/pi*phModel);
+            if i == NHam, xlabel('f (Hz)'),  end
+
+            if k == NAccel
+                ylabel('Phase (deg)')
+            end
+        end
+    end
+
+    linkaxes(axCompare(:),'x');
+    legend(axCompare(end),{'Exp','Model'},'AutoUpdate','off')
+    xlim(axCompare(1),[setup.wMin setup.wMax]/2/pi);
+end
 
 function [K,M] = residual_mass_and_stiffness(w,u,y)
 c = [0*w+1 -1./(w.^2)]\(y-u);
@@ -370,4 +362,16 @@ end
 
 if ~isfield(options,'mode_col')
     options.mode_col = lines(Nmodes);
+end
+
+if ~isfield(options,'bPlotExp')
+    options.bPlotExp = true;
+end
+
+if ~isfield(options,'bPlotModel')
+    options.bPlotModel = true;
+end
+
+if ~isfield(options,'bPlotComparison')
+    options.bPlotComparison = true;
 end
