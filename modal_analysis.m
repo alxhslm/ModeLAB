@@ -36,11 +36,13 @@ else
     if isfield(setup,'wBand')
         setup.modes.wBand = setup.wBand;
         setup = rmfield(setup,'wBand');
+        save(setup_mat_file,'-struct','setup')
     end
     
     if ~isfield(setup.geom,'bModeHam')
         setup.geom.bModeHam = true(setup.NHam,size(setup.modes.wBand,1));
         setup.geom.bModeAcc = true(setup.NAcc,size(setup.modes.wBand,1));
+        save(setup_mat_file,'-struct','setup')
     end
     
     if ~isfield(setup.geom,'bHamAccParallel')
@@ -55,13 +57,12 @@ else
                 setup.geom.bHamAccSameBody(:,i) = setup.iBodyHam == setup.iBodyAcc(i);
             end
         end
+        save(setup_mat_file,'-struct','setup')
     end
     
     if ~isfield(setup,'options')
         setup.options.bFitBand = 0;
     end
-    
-    save(setup_mat_file,'-struct','setup')
 end
 
 
