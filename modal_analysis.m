@@ -137,7 +137,7 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
             end
 
             for j = 1:Nmodes
-                [~,ii] = min(abs(modal_par.omega - setup.wEst(j)));
+                [~,ii] = min(abs(modal_par.omega - setup.modes.wEst(j)));
                 modes.omega(j) = modal_par.omega(ii);
                 modes.zeta(j)  = modal_par.zeta(ii);
                 modal_par.omega(ii) = Inf;
@@ -147,6 +147,21 @@ if ~isfile(modes_mat_file) || moddate(setup_mat_file) > moddate(modes_mat_file) 
                     end
                 end
             end
+        case 'gls'
+            for j = 1:Nmodes
+                iBand = exp.w(2:end-1) > setup.modes.wBand(j,1) & exp.w(2:end-1) < setup.modes.wBand(j,2);
+                res = ls_fit(exp.w(iBand),exp.H(iBand,:,:));
+                modes.A(j,:,:) = res.Ar;
+                modes.omega(j) = res.wr;
+                modes.zeta(j) = res.zr;
+                
+                for i = 1:NHam
+                    for k = 1:NAccel
+                        modes.fit.H(iBand,i,k) = modes.A(j,i,k) ./ (modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w(iBand) - exp.w(iBand).^2);
+                    end
+                end
+            end
+            
         otherwise
             if strcmp(options.method,'rfp')
                 for i = 1:NHam
