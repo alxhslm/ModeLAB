@@ -1,4 +1,4 @@
-function [modes,model,han] = modal_analysis(dataroot,options)
+function [modes,model,han,setup] = modal_analysis(dataroot,options)
 % MODAL_ANALYSIS Performs modal analysis on multiple hammer tests
 %
 %      Inputs:
@@ -83,7 +83,6 @@ elseif size(exp.H,3) < size(setup.rAcc,1)
 end
 
 setup.geom = modal_geom(setup);
-save(setup_mat_file,'-struct','setup')
  
 NAccel = size(exp.H,3);
 NHam  = size(exp.H,2);
