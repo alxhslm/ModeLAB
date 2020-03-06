@@ -19,7 +19,7 @@ while ~feof(fid)
         if field(1) ~= '#'
             if isempty(data)
                 data = [];
-            elseif ~isnan(str2double(data{1}))
+            elseif ~isnan(str2double(data{1})) || strcmp(data{1},'NaN')
                 data = cellfun(@str2double,data);
             end
             P.(field) = data;

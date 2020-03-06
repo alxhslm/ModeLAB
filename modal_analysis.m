@@ -29,6 +29,7 @@ else
     
     if isfield(setup,'wBand')
         setup.modes.wBand = setup.wBand;
+        setup.modes.Nmodes = size(setup.wBand,1);
         setup = rmfield(setup,'wBand');
         save(setup_mat_file,'-struct','setup')
     end
@@ -59,6 +60,8 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
 elseif any(bSkip)
+    warning('Skipping hammer points specified in setup csv')
+    setup.rHam = setup.rHam(1:size(exp.H,2),:);
     setup.rHam = setup.rHam(~bSkip,:);
     setup.nHam = setup.nHam(~bSkip,:);
     setup.iBodyHam = setup.iBodyHam(~bSkip,:);
