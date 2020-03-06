@@ -4,7 +4,8 @@ Nmodes = size(modes.A,1);
 %find least squared solution for each mode shape
 Vloc = zeros(size(geom.r,1),Nmodes);
 for j = 1:Nmodes    
-    V_exp = real(permute(modes.A(j,:,:),[3 2 1]));
+    Aj = permute(modes.A(j,:,:),[3 2 1]);
+    V_exp = sign(real(Aj)).*abs(Aj);
     
     %find driving point hammer test with the largest response
     max_curr = -Inf;
