@@ -21,16 +21,22 @@ for j = 1:Nmodes
     iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.modes.wBand(j,2) | wj < setup.modes.wBand(j,1) | zj < 0;
 
     wj(iBad) = NaN;
-    [~,iwReject] = deleteoutliers(wj,0.5);
-    iBad = iBad | (iwReject & ~setup.geom.bDrivePt);
-    modes.omega(j) = mean(wj(~iBad),'omitnan');
+    if ~all(iBad(:))
+        [~,iwReject] = deleteoutliers(wj,0.5);
+        iBad = iBad | (iwReject & ~setup.geom.bDrivePt);
+        modes.omega(j) = mean(wj(~iBad),'omitnan');
 
-    zj(iBad) = NaN;
-    [~,izReject] = deleteoutliers(zj,0.5);
-    iBad = iBad | (izReject & ~setup.geom.bDrivePt);
-    modes.zeta(j) = mean(zj(~iBad),'omitnan');
-    
-    H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
+        zj(iBad) = NaN;
+        [~,izReject] = deleteoutliers(zj,0.5);
+        iBad = iBad | (izReject & ~setup.geom.bDrivePt);
+        modes.zeta(j) = mean(zj(~iBad),'omitnan');
+
+        H(:,j) = 1./(modes.omega(j)^2 + 2*1i*modes.zeta(j)*modes.omega(j)*exp.w - exp.w.^2);
+    else
+        modes.omega(j) = NaN;
+        modes.zeta(j) = NaN;
+        warning('All points were invalid for mode %d',j)
+    end     
     
     if setup.options.bFitBand
         iFit = exp.w > setup.modes.wBand(j,1) &  exp.w < setup.modes.wBand(j,2);
