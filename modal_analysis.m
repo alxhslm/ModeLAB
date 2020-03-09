@@ -45,7 +45,7 @@ exp_mat_file = fullfile(dataroot, 'exp.mat');
 exp = modal_load_frfs(dataroot);   
 
 %% Trim frf / geomtery
-bSkip = any(isnan(setup.rHam),2);
+bSkipHam = any(isnan(setup.rHam),2);
 if size(exp.H,2) > size(setup.rHam,1)
     %trim frf
     warning('Not enough hammer points specified in setup csv')
@@ -59,16 +59,17 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     setup.iBodyHam = setup.iBodyHam(1:size(exp.H,2));
     
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
-elseif any(bSkip)
+elseif any(bSkipHam)
     warning('Skipping hammer points specified in setup csv')
     setup.rHam = setup.rHam(1:size(exp.H,2),:);
-    setup.rHam = setup.rHam(~bSkip,:);
-    setup.nHam = setup.nHam(~bSkip,:);
-    setup.iBodyHam = setup.iBodyHam(~bSkip,:);
-    exp.H = exp.H(:,~bSkip,:);
-    exp.TestLabel = exp.TestLabel(~bSkip);
+    setup.rHam = setup.rHam(~bSkipHam,:);
+    setup.nHam = setup.nHam(~bSkipHam,:);
+    setup.iBodyHam = setup.iBodyHam(~bSkipHam,:);
+    exp.H = exp.H(:,~bSkipHam,:);
+    exp.TestLabel = exp.TestLabel(~bSkipHam);
 end
 
+bSkipAcc = any(isnan(setup.rAcc),2);
 if size(exp.H,3) > size(setup.rAcc,1)
     %trim frf
     warning('Not enough accelerometer points specified in setup csv')
@@ -83,6 +84,13 @@ elseif size(exp.H,3) < size(setup.rAcc,1)
     setup.sTest = setup.sTest(1:size(exp.H,3),:);
     
     setup.AccLabel = setup.AccLabel(1:size(exp.H,3));
+elseif any(bSkipAcc)
+    warning('Skipping accelerometers channels specified in setup csv')
+    setup.rAcc = setup.rAcc(~bSkipAcc,:);
+    setup.nAcc = setup.nAcc(~bSkipAcc,:);
+    setup.iBodyAcc = setup.iBodyAcc(~bSkipAcc,:);
+    exp.H = exp.H(:,:,~bSkipAcc);
+    setup.AccName = setup.AccName(~bSkipAcc);
 end
 
 setup.geom = modal_geom(setup);
