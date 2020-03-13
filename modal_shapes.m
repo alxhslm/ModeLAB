@@ -23,5 +23,5 @@ for j = 1:Nmodes
     Phi = Aj ./ sqrt(Aj(kMax,iMax));
     Phi = abs(Phi) .*real(Phi);
  
-    Vloc(:,j) = Phi;
+    Vloc(:,j) = [Phi(kMax,geom.iFromHam) Phi(geom.iFromAcc,iMax).'];
 end

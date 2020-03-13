@@ -61,12 +61,12 @@ elseif size(exp.H,2) < size(setup.rHam,1)
     setup.sTest = setup.sTest(1:size(exp.H,2),:);
 elseif any(bSkipHam)
     warning('Skipping hammer points specified in setup csv')
-    setup.rHam = setup.rHam(1:size(exp.H,2),:);
     setup.rHam = setup.rHam(~bSkipHam,:);
     setup.nHam = setup.nHam(~bSkipHam,:);
     setup.iBodyHam = setup.iBodyHam(~bSkipHam,:);
     exp.H = exp.H(:,~bSkipHam,:);
     exp.TestLabel = exp.TestLabel(~bSkipHam);
+    setup.sTest = setup.sTest(~bSkipHam,:);
 end
 
 bSkipAcc = any(isnan(setup.rAcc),2);
@@ -81,7 +81,7 @@ elseif size(exp.H,3) < size(setup.rAcc,1)
     setup.nAcc = setup.nAcc(1:size(exp.H,3),:);
     setup.iBodyAcc = setup.iBodyAcc(1:size(exp.H,3));
     
-    setup.sTest = setup.sTest(1:size(exp.H,3),:);
+    setup.sTest = setup.sTest(:,1:size(exp.H,3));
     
     setup.AccLabel = setup.AccLabel(1:size(exp.H,3));
 elseif any(bSkipAcc)
@@ -90,6 +90,7 @@ elseif any(bSkipAcc)
     setup.nAcc = setup.nAcc(~bSkipAcc,:);
     setup.iBodyAcc = setup.iBodyAcc(~bSkipAcc,:);
     exp.H = exp.H(:,:,~bSkipAcc);
+    setup.sTest = setup.sTest(:,~bSkipAcc);
     setup.AccName = setup.AccName(~bSkipAcc);
 end
 

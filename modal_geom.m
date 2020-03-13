@@ -41,6 +41,6 @@ if isfield(setup.modes,'nMode')
         geom.bModeHam(:,k) = setup.nHam * setup.modes.nMode(k,:)' == 1;
     end
 else
-    geom.bModeAcc = true(setup.NAcc,setup.modes.Nmodes);
-    geom.bModeHam = true(setup.NHam,setup.modes.Nmodes);
+    geom.bModeAcc = true(size(setup.rAcc,1),setup.modes.Nmodes);
+    geom.bModeHam = true(size(setup.rHam,1),setup.modes.Nmodes);
 end
