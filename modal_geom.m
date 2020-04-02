@@ -37,8 +37,8 @@ end
 %check if each test is in the direction of each mode
 if isfield(setup.modes,'nMode')
     for k = 1:setup.modes.Nmodes
-        geom.bModeAcc(:,k) = setup.nAcc * setup.modes.nMode(k,:)' == 1;
-        geom.bModeHam(:,k) = setup.nHam * setup.modes.nMode(k,:)' == 1;
+        geom.bModeAcc(:,k) = setup.nAcc * setup.modes.nMode(k,:)' ~= 0;
+        geom.bModeHam(:,k) = setup.nHam * setup.modes.nMode(k,:)' ~= 0;
     end
 else
     geom.bModeAcc = true(size(setup.rAcc,1),setup.modes.Nmodes);

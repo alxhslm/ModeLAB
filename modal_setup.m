@@ -116,4 +116,5 @@ modes.Nmodes = size(modes.wBand,1);
 
 if isfield(P,'uxMode')
     modes.nMode = [P.uxMode'  P.uyMode' P.uzMode'];
+    modes.nMode = normalise(modes.nMode,2);
 end
