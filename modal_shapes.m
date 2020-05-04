@@ -10,7 +10,11 @@ for j = 1:Nmodes
     max_curr = -Inf;
     kMax = 1;
     for k = 1:length(geom.iAcc)
-        iDrivePt = find(geom.bDrivePt(:,k) & geom.bModeAcc(k,j));
+        if any(geom.bModeAcc(:,j))
+            iDrivePt = find(geom.bDrivePt(:,k) & geom.bModeAcc(k,j));
+        else
+            iDrivePt = find(geom.bDrivePt(:,k));
+        end
         if ~isempty(iDrivePt) && abs(Aj(k,iDrivePt)) > max_curr
              kMax = k;
              iMax = iDrivePt;
@@ -21,7 +25,7 @@ for j = 1:Nmodes
     fprintf('Using acc %d for mode %d\n',kMax,j)
     
     Phi = Aj ./ sqrt(Aj(kMax,iMax));
-    Phi = abs(Phi) .*real(Phi);
+    Phi = abs(Phi) .*sign(real(Phi));
  
     Vloc(:,j) = [Phi(kMax,geom.iFromHam) Phi(geom.iFromAcc,iMax).'];
 end

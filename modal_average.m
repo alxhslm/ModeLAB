@@ -17,6 +17,10 @@ for j = 1:Nmodes
     end
     
     iBad = ~(setup.geom.bModeHam(:,j) & setup.geom.bModeAcc(:,j)');
+    if all(iBad(:))
+        iBad = ~iBad;
+    end
+        
     iBad = iBad | ~(setup.geom.bHamAccParallel & setup.geom.bHamAccSameBody);
     iBad = iBad | isnan(wj) | isnan(zj) |  wj > setup.modes.wBand(j,2) | wj < setup.modes.wBand(j,1) | zj < 0;
 

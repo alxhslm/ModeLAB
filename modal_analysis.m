@@ -45,7 +45,7 @@ exp_mat_file = fullfile(dataroot, 'exp.mat');
 exp = modal_load_frfs(dataroot);   
 
 %% Trim frf / geomtery
-bSkipHam = any(isnan(setup.rHam),2);
+bSkipHam = any(isnan(setup.rHam),2) | any(isnan(setup.nHam),2);
 if size(exp.H,2) > size(setup.rHam,1)
     %trim frf
     warning('Not enough hammer points specified in setup csv')
@@ -69,7 +69,7 @@ elseif any(bSkipHam)
     setup.sTest = setup.sTest(~bSkipHam,:);
 end
 
-bSkipAcc = any(isnan(setup.rAcc),2);
+bSkipAcc = any(isnan(setup.rAcc),2) | any(isnan(setup.nAcc),2);
 if size(exp.H,3) > size(setup.rAcc,1)
     %trim frf
     warning('Not enough accelerometer points specified in setup csv')
