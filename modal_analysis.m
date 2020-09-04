@@ -39,6 +39,7 @@ else
     end
 end
 
+han = struct();
 
 %% Extract FRFs and store in matrix
 exp_mat_file = fullfile(dataroot, 'exp.mat'); 
